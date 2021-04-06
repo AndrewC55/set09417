@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define standardX 6
 #define standardY 7
@@ -11,6 +12,9 @@ void replayGame();
 void display(char board[standardX][standardY]);
 void init(char board[standardX][standardY]);
 void insert(char board[standardX][standardY], int row, char player);
+int check(char board[standardX][standardY]);
+int checkHorizontal(char board[standardX][standardY]);
+int checkVertical(char board[standardX][standardY]);
 
 int main(void)
 {
@@ -70,7 +74,7 @@ int options()
 
 void createBoard()
 {
-    int input = 0;
+    int input, result, wins = 0;
     char board[standardX][standardY];
 
     while (input < 1 || input > 3)
@@ -90,19 +94,31 @@ void createBoard()
         break;
     }
 
-    while (input > 1 || input < 7)
+    while ((input > 1 || input < 7) && wins == 0)
     {
         printf("Turn: Red \n");
         printf("Please select a row\n");
         scanf("%d", &input);
         insert(board, input - 1, 'R');
         display(board);
+        result = check(board);
+        if (result) {
+            printf("Red wins\n");
+            wins = 1;
+        }
 
-        printf("Turn: Yellow \n");
-        printf("Please select a row\n");
-        scanf("%d", &input);
-        insert(board, input - 1, 'Y');
-        display(board);
+        if (wins != 1) {
+            printf("Turn: Yellow \n");
+            printf("Please select a row\n");
+            scanf("%d", &input);
+            insert(board, input - 1, 'Y');
+            display(board);
+            result = check(board);
+            if (result) {
+                printf("Yellow wins\n");
+                wins = 1;
+            }
+        }
     }
 }
 
@@ -140,6 +156,49 @@ void insert(char board[standardX][standardY], int row, char player)
             continue;
         }
     }
+}
+
+int check(char board[standardX][standardY])
+{
+    return checkHorizontal(board) == 1 || checkVertical(board) == 1;
+}
+
+int checkHorizontal(char board[standardX][standardY])
+{
+    int i, j, count;
+    for (i = 0; i < standardX; i++) {
+        for (j = 0; j < standardY; j++) {
+            if (board[i][j] == board[i][j + 1] && board[i][j] != 'O') {
+                count++;
+                if (count == 3) {
+                    return 1;
+                }
+            } else {
+                count = 0;
+            }
+        }
+    }
+
+    return 0;
+}
+
+int checkVertical(char board[standardX][standardY])
+{
+    int i, j, count;
+    for (i = 0; i < standardY; i++) {
+        for (j = 0; j < standardX; j++) {
+            if (board[j][i] == board[j + 1][i] && board[j][i] != 'O') {
+                count++;
+                if (count == 3) {
+                    return 1;
+                }
+            } else {
+                count = 0;
+            }
+        }
+    }
+
+    return 0;
 }
 
 void replayGame()
