@@ -1,22 +1,23 @@
 #include <stdio.h>
 
-#define standardX = 7
-#define standardY = 5
+#define standardX 5
+#define standardY 7
 
 void welcome();
 int options();
-void createBoard(int *);
+void createBoard();
 void replayGame();
-void play(int *);
+void display(char board[standardX][standardY]);
+void init(char board[standardX][standardY]);
 
-int main()
+int main(void)
 {
     welcome();
     int option = options();
 
     switch (option) {
     case 1:
-        //int gameBoard[2] = createBoard();
+        createBoard();
         break;
     case 2:
         replayGame();
@@ -38,8 +39,8 @@ void welcome()
     printf("/_______/  /_______/  /__/ |__/  /__/ |__/  /_______/  /_______/     /__/ \n");
     printf("\n");
     printf("     ________   ________   ___   ___   ________ \n");
-    printf("    /  _____/  / ____  /  /  /  /  /  /       / \n");
-    printf("   /  /____   / /   / /  /  /  /  /  /   4 __/ \n");
+    printf("    /  _____/  / ____  /  /  /  /  /  /  __   / \n");
+    printf("   /  /____   / /   / /  /  /  /  /  /  /_/__/ \n");
     printf("  /  _____/  / /   / /  /  /  /  /  /  /|  | \n");
     printf(" /  /       / /___/ /  /  /__/  /  /  / |  | \n");
     printf("/__/       /_______/  /________/  /__/  |__| \n");
@@ -68,7 +69,7 @@ int options()
 void createBoard()
 {
     int input = 0;
-    int* returnAxis[2];
+    char board[standardX][standardY];
 
     while (input < 1 || input > 3)
     {
@@ -76,6 +77,39 @@ void createBoard()
         printf("1. Standard \n");
         printf("2. Custom (NOT YET DONE) \n");
         scanf("%d", &input);
+    }
+
+    switch (input) {
+    case 1:
+        init(board);
+        display(board);
+        break;
+    default:
+        break;
+    }
+}
+
+void init(char board[standardX][standardY])
+{
+    int i, j;
+
+    for (i = 0; i < standardX; ++i) {
+        for (j = 0; j < standardY; ++j) {
+            board[i][j] = 'O';
+        }
+    }
+}
+
+void display(char board[standardX][standardY])
+{   
+    int i, j;
+    printf("\nConnect 4 \n");
+    printf("_____________________________ \n");
+    for (i = 0; i < standardX; ++i) {
+        for (j = 0; j < standardY; ++j) {
+            printf("| %c ", board[i][j]);
+        }
+        printf("| \n");
     }
 }
 
