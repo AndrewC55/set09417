@@ -1,6 +1,7 @@
 #include <stdio.h>
+#include <string.h>
 
-#define standardX 5
+#define standardX 6
 #define standardY 7
 
 void welcome();
@@ -9,6 +10,7 @@ void createBoard();
 void replayGame();
 void display(char board[standardX][standardY]);
 void init(char board[standardX][standardY]);
+void insert(char board[standardX][standardY], int row, char player);
 
 int main(void)
 {
@@ -87,6 +89,21 @@ void createBoard()
     default:
         break;
     }
+
+    while (input > 1 || input < 7)
+    {
+        printf("Turn: Red \n");
+        printf("Please select a row\n");
+        scanf("%d", &input);
+        insert(board, input - 1, 'R');
+        display(board);
+
+        printf("Turn: Yellow \n");
+        printf("Please select a row\n");
+        scanf("%d", &input);
+        insert(board, input - 1, 'Y');
+        display(board);
+    }
 }
 
 void init(char board[standardX][standardY])
@@ -104,12 +121,24 @@ void display(char board[standardX][standardY])
 {   
     int i, j;
     printf("\nConnect 4 \n");
+    printf("\n  1   2   3   4   5   6   7 \n");
     printf("_____________________________ \n");
     for (i = 0; i < standardX; ++i) {
         for (j = 0; j < standardY; ++j) {
             printf("| %c ", board[i][j]);
         }
         printf("| \n");
+    }
+}
+
+void insert(char board[standardX][standardY], int row, char player)
+{
+    int i, j;
+    for (i = 0; i < standardX; i++) {
+        if (board[i][row] == 'O' && board[i + 1][row] != 'O') {
+            board[i][row] = player;
+            continue;
+        }
     }
 }
 
