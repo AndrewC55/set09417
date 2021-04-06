@@ -15,6 +15,7 @@ void insert(char board[standardX][standardY], int row, char player);
 int check(char board[standardX][standardY]);
 int checkHorizontal(char board[standardX][standardY]);
 int checkVertical(char board[standardX][standardY]);
+int checkDiagonal(char board[standardX][standardY]);
 
 int main(void)
 {
@@ -160,21 +161,17 @@ void insert(char board[standardX][standardY], int row, char player)
 
 int check(char board[standardX][standardY])
 {
-    return checkHorizontal(board) == 1 || checkVertical(board) == 1;
+    return checkHorizontal(board) == 1 || checkVertical(board) == 1 || checkDiagonal(board) == 1;
 }
 
 int checkHorizontal(char board[standardX][standardY])
 {
-    int i, j, count;
+    int i, j;
     for (i = 0; i < standardX; i++) {
         for (j = 0; j < standardY; j++) {
-            if (board[i][j] == board[i][j + 1] && board[i][j] != 'O') {
-                count++;
-                if (count == 3) {
-                    return 1;
-                }
-            } else {
-                count = 0;
+            if (board[i][j] == board[i][j + 1] && board[i][j] == board[i][j + 2] && board[i][j] == board[i][j + 3] && board[i][j] != 'O') {
+                printf("Horizontal\n");
+                return 1;
             }
         }
     }
@@ -184,16 +181,30 @@ int checkHorizontal(char board[standardX][standardY])
 
 int checkVertical(char board[standardX][standardY])
 {
-    int i, j, count;
+    int i, j;
     for (i = 0; i < standardY; i++) {
         for (j = 0; j < standardX; j++) {
-            if (board[j][i] == board[j + 1][i] && board[j][i] != 'O') {
-                count++;
-                if (count == 3) {
-                    return 1;
-                }
-            } else {
-                count = 0;
+            if (board[j][i] == board[j + 1][i] && board[j][i] == board[j + 2][i] && board[j][i] == board[j + 3][i] && board[j][i] != 'O') {
+                printf("Vertical\n");
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+int checkDiagonal(char board[standardX][standardY])
+{
+    int i, j, count1, count2;
+    for (i = 0; i < standardX; i++) {
+        for (j = 0; j < standardY; j++) {
+            if (board[i][j] == board[i + 1][j + 1] && board[i][j] == board[i + 2][j + 2] && board[i][j] == board[i + 3][j + 3] && board[i][j] != 'O') {
+                printf("Diagonal1\n");
+                return 1;
+            } else if (board[i][j] == board[i - 1][j + 1] && board[i][j] == board[i - 2][j + 2] && board[i][j] == board[i - 3][j + 3] && board[i][j] != 'O') {
+                printf("Diagonal2\n");
+                return 1;
             }
         }
     }
