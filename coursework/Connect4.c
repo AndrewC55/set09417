@@ -5,9 +5,10 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+#define maxBoardSize 20
+
 // define length and breadth of standard sized connect 4 board
-#define standardX 6
-#define standardY 7
+int standardX = 7, standardY = 6;
 
 // prototypes of functions used
 // welcome function prototype of type void
@@ -17,23 +18,26 @@ int options();
 // createBoard function prototype of type void
 void createBoard();
 // display function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-void display(char board[standardX][standardY]);
+void display(char board[standardY][standardX]);
 // init function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-void init(char board[standardX][standardY]);
+void init(char board[standardY][standardX]);
 // checkDiagonal function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-void play(char board[standardX][standardY]);
+void play(char board[standardY][standardX]);
 // insert function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant), row of type integer and player of type char
-void insert(char board[standardX][standardY], int row, char player);
+void insert(char board[standardY][standardX], int row, char player);
 // check function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-bool check(char board[standardX][standardY]);
+bool check(char board[standardY][standardX]);
 // checkHorizontal function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-bool checkHorizontal(char board[standardX][standardY]);
+bool checkHorizontal(char board[standardY][standardX]);
 // checkVertical function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-bool checkVertical(char board[standardX][standardY]);
+bool checkVertical(char board[standardY][standardX]);
 // checkDiagonal function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-bool checkDiagonal(char board[standardX][standardY]);
+bool checkDiagonal(char board[standardY][standardX]);
 // validateInput function prototype of type int that takes in a singular char
 int validateInput(char input, int max);
+
+int defineX();
+int defineY();
 
 char* getPlayerName(bool player);
 // replayGame function prototype of type void
@@ -116,44 +120,43 @@ int options() {
 // createBoard function used to create the board based on size
 void createBoard() {
     // define input and set it's value to '0'
-    char option, board[standardX][standardY];
+    char option;
 
     for (;;) {
         // ask user what board size they would like to play with
-        printf("Please select a board size \n");
-        printf("1. Standard (7x6) \n");
-        printf("2. Custom (NOT YET DONE) \n");
+        printf("Please select a board size\n");
+        printf("1. Standard (7x6)\n");
+        printf("2. Custom (up to 20x20)\n");
         scanf("%c", &option);
         option = validateInput(option, 2);
-        if (option != 0) {
+        if (option == 1) {
             system("clear");
+            break;
+        } else if (option == 2) {
+            system("clear");
+            standardX = defineX();
+            standardY = defineY();
             break;
         } else {
             system("clear");
             continue;
         }
     }
-
-    // switch statement 
-    switch (option) {
-    case 1:
-        init(board);
-        display(board);
-        play(board);
-        break;
-    default:
-        break;
-    }
+    
+    char board[standardY][standardX];
+    init(board);
+    display(board);
+    play(board);
 }
 
 // init function used to set all values of the 2 dimensional board array to 'O'
-void init(char board[standardX][standardY]) {
+void init(char board[standardY][standardX]) {
     // define variables 'i' and 'j' as integers
     int i, j;
 
     // for loop through the the 'board' array
-    for (i = 0; i < standardX; ++i) {
-        for (j = 0; j < standardY; ++j) {
+    for (i = 0; i < standardY; ++i) {
+        for (j = 0; j < standardX; ++j) {
             // define every value in the array as 'O'
             board[i][j] = 'O';
         }
@@ -161,20 +164,29 @@ void init(char board[standardX][standardY]) {
 }
 
 // display function used to display the board based on size
-void display(char board[standardX][standardY]) {
+void display(char board[standardY][standardX]) {
     // define variables 'i' and 'j' as integers
     int i, j;
     // clear the terminal so the it doesn't get too crowded and makes it easier on the eye
     system("clear");
     // printf Connect 4
-    printf("\nConnect 4 \n");
-    // printf column numbers
-    printf("\n  1   2   3   4   5   6   7 \n");
-    // pritnf top of game board
-    printf("_____________________________ \n");
+    printf("\nConnect 4 \n\n");
+
+    for(i = 0; i < standardX; ++i) {
+        if (i + 1 > 9) {
+            printf("  %d", i + 1);
+        } else {
+            printf("  %d ", i + 1);
+        }
+    }
+    printf("\n");
+    for(i = 0; i < standardX; ++i) {
+        printf("____");
+    }
+    printf("_\n");
     // for loop through the 'board' array and display each value with a '|' to make create the board
-    for (i = 0; i < standardX; ++i) {
-        for (j = 0; j < standardY; ++j) {
+    for (i = 0; i < standardY; ++i) {
+        for (j = 0; j < standardX; ++j) {
             // printf array value as a char
             printf("| %c ", board[i][j]);
         }
@@ -183,7 +195,7 @@ void display(char board[standardX][standardY]) {
     }
 }
 
-void play(char board[standardX][standardY]) {
+void play(char board[standardY][standardX]) {
     // define input, result and wins variables as integers and set values to '0'
     bool player = true, result = false;
     char* playerName;
@@ -199,7 +211,7 @@ void play(char board[standardX][standardY]) {
         printf("Please select a row\n");
         // scanf user's input
         scanf("%c", &move);
-        move = validateInput(move, 7);
+        move = validateInput(move, standardX);
         if (move != 0) {
             // call insert function to assign users inputted to a space in the 'board' array
             insert(board, move - 1, playerName[0]);
@@ -221,8 +233,9 @@ void play(char board[standardX][standardY]) {
     }
 }
 
-void insert(char board[standardX][standardY], int row, char player) {
-    for (int i = 0; i < standardX; i++) {
+void insert(char board[standardY][standardX], int row, char player) {
+    printf("Row is %d", row);
+    for (int i = 0; i < standardY; i++) {
         if (board[i][row] == 'O' && board[i + 1][row] != 'O') {
             board[i][row] = player;
             continue;
@@ -230,14 +243,14 @@ void insert(char board[standardX][standardY], int row, char player) {
     }
 }
 
-bool check(char board[standardX][standardY]) {
+bool check(char board[standardY][standardX]) {
     return checkHorizontal(board) || checkVertical(board) || checkDiagonal(board);
 }
 
-bool checkHorizontal(char board[standardX][standardY]) {
+bool checkHorizontal(char board[standardY][standardX]) {
     int i, j;
-    for (i = 0; i < standardX; i++) {
-        for (j = 0; j < standardY; j++) {
+    for (i = 0; i < standardY; i++) {
+        for (j = 0; j < standardX; j++) {
             if (board[i][j] == board[i][j + 1] && board[i][j] == board[i][j + 2] && board[i][j] == board[i][j + 3] && board[i][j] != 'O') {
                 return true;
             }
@@ -247,10 +260,10 @@ bool checkHorizontal(char board[standardX][standardY]) {
     return false;
 }
 
-bool checkVertical(char board[standardX][standardY]) {
+bool checkVertical(char board[standardY][standardX]) {
     int i, j;
-    for (i = 0; i < standardY; i++) {
-        for (j = 0; j < standardX; j++) {
+    for (i = 0; i < standardX; i++) {
+        for (j = 0; j < standardY; j++) {
             if (board[j][i] == board[j + 1][i] && board[j][i] == board[j + 2][i] && board[j][i] == board[j + 3][i] && board[j][i] != 'O') {
                 return true;
             }
@@ -260,10 +273,10 @@ bool checkVertical(char board[standardX][standardY]) {
     return false;
 }
 
-bool checkDiagonal(char board[standardX][standardY]) {
+bool checkDiagonal(char board[standardY][standardX]) {
     int i, j, count1, count2;
-    for (i = 0; i < standardX; i++) {
-        for (j = 0; j < standardY; j++) {
+    for (i = 0; i < standardY; i++) {
+        for (j = 0; j < standardX; j++) {
             if (board[i][j] == board[i + 1][j + 1] && board[i][j] == board[i + 2][j + 2] && board[i][j] == board[i + 3][j + 3] && board[i][j] != 'O') {
                 return true;
             } else if (board[i][j] == board[i - 1][j + 1] && board[i][j] == board[i - 2][j + 2] && board[i][j] == board[i - 3][j + 3] && board[i][j] != 'O') {
@@ -294,6 +307,22 @@ char* getPlayerName(bool player) {
     }
 
     return red;
+}
+
+int defineX() {
+    char length;
+    printf("Please enter length of the board (number of rows across)\n");
+    // scanf user's input
+    scanf(" %s", &length);
+    return validateInput(length, maxBoardSize);
+}
+
+int defineY() {
+    char height;
+    printf("Please enter height of the board (number of rows upwards)\n");
+    // scanf user's input
+    scanf(" %s", &height);
+    return validateInput(height, maxBoardSize);
 }
 
 void replayGame() {
