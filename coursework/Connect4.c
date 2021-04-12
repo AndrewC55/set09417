@@ -20,11 +20,11 @@ void createBoard();
 // display function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
 void display(char board[standardY][standardX]);
 // init function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
-void init(char board[standardY][standardX]);
+void initArray(char board[standardY][standardX]);
 // checkDiagonal function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
 void play(char board[standardY][standardX]);
 // insert function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant), row of type integer and player of type char
-void insert(char board[standardY][standardX], int row, char player);
+bool insert(char board[standardY][standardX], int row, char player);
 // check function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
 bool check(char board[standardY][standardX]);
 // checkHorizontal function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
@@ -103,7 +103,7 @@ int options() {
         printf("2. Re-watch previous game \n");
         printf("3. Quit \n");
         // Take in user's option
-        scanf("%c", &option);
+        scanf(" %c", &option);
         option = validateInput(option, 3);
         if (option != 0) {
             system("clear");
@@ -124,10 +124,11 @@ void createBoard() {
 
     for (;;) {
         // ask user what board size they would like to play with
-        printf("Please select a board size\n");
+        printf("What board size would you like?\n");
         printf("1. Standard (7x6)\n");
-        printf("2. Custom (up to 20x20)\n");
-        scanf("%c", &option);
+        printf("2. Custom (up to 20x20) (VERY BROKEN DO NOT USE) \n");
+        printf("Please select a board size: ");
+        scanf(" %c", &option);
         option = validateInput(option, 2);
         if (option == 1) {
             system("clear");
@@ -144,13 +145,13 @@ void createBoard() {
     }
     
     char board[standardY][standardX];
-    init(board);
+    initArray(board);
     display(board);
     play(board);
 }
 
 // init function used to set all values of the 2 dimensional board array to 'O'
-void init(char board[standardY][standardX]) {
+void initArray(char board[standardY][standardX]) {
     // define variables 'i' and 'j' as integers
     int i, j;
 
@@ -208,39 +209,46 @@ void play(char board[standardY][standardX]) {
         // Red will go first
         printf("Turn: %s \n", playerName);
         // ask user to select a row
-        printf("Please select a row\n");
+        printf("Please select a row: ");
         // scanf user's input
-        scanf("%c", &move);
+        scanf(" %c", &move);
         move = validateInput(move, standardX);
         if (move != 0) {
             // call insert function to assign users inputted to a space in the 'board' array
-            insert(board, move - 1, playerName[0]);
-            // call display function to display updated board
-            display(board);
-            // call check function to see if user has won
-            result = check(board);
-            // if result is true then user has won
-            if (result) {
-                printf("%s wins\n", playerName);
-                break;
+            if (insert(board, move - 1, playerName[0])) {
+                // call display function to display updated board
+                display(board);
+                // call check function to see if user has won
+                result = check(board);
+                // if result is true then user has won
+                if (result) {
+                    printf("%s wins\n", playerName);
+                    break;
+                }
+                player = !player;
+            } else {
+                display(board);
+                printf("Row is full, please select another\n");
             }
         } else {
             display(board);
+            printf("Please select a row between 1 and %d \n", standardX);
             continue;
         }
-        
-        player = !player;
     }
 }
 
-void insert(char board[standardY][standardX], int row, char player) {
-    printf("Row is %d", row);
+bool insert(char board[standardY][standardX], int row, char player) {
     for (int i = 0; i < standardY; i++) {
         if (board[i][row] == 'O' && board[i + 1][row] != 'O') {
             board[i][row] = player;
-            continue;
+            return true;
+        } else if (i == standardY - 1) {
+            return false;
         }
     }
+
+    return false;
 }
 
 bool check(char board[standardY][standardX]) {
