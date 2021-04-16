@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define maxBoardSize 20
 
@@ -11,6 +12,7 @@
 int standardX = 7, standardY = 6;
 
 // prototypes of functions used
+void runGame();
 // welcome function prototype of type void
 void welcome();
 // options function prototype of type integer
@@ -45,6 +47,11 @@ void replayGame();
 
 // main function of the programme which is used when the programme is run
 int main(int argc, char* argv[]) {
+    runGame();
+    return 0;
+}
+
+void runGame() {
     // call welcome function first
     welcome();
     // define integer option variable as the return value of the 'options' function
@@ -67,8 +74,6 @@ int main(int argc, char* argv[]) {
     default:
         break;
     }
-
-    return 0;
 }
 
 // welocme function is used to display connect 4 (non-functional at all and doesn't add much to the game)
@@ -140,6 +145,7 @@ void createBoard() {
             break;
         } else {
             system("clear");
+            printf("Please select an option between 1 and 2\n");
             continue;
         }
     }
@@ -200,7 +206,7 @@ void play(char board[standardY][standardX]) {
     // define input, result and wins variables as integers and set values to '0'
     bool player = true, result = false;
     char* playerName;
-    char move;
+    char move, cont;
     playerName = malloc(sizeof(char) * 7);
 
     for (;;) {
@@ -225,6 +231,7 @@ void play(char board[standardY][standardX]) {
                     printf("%s wins\n", playerName);
                     break;
                 }
+                
                 player = !player;
             } else {
                 display(board);
@@ -236,6 +243,8 @@ void play(char board[standardY][standardX]) {
             continue;
         }
     }
+    
+    runGame();
 }
 
 bool insert(char board[standardY][standardX], int row, char player) {
