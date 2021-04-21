@@ -8,9 +8,20 @@
 
 #define maxBoardSize 20
 
+struct node
+{
+    int row;
+    char player, move;
+    struct node * prev;
+    struct node * next;
+};
+
 // define length and breadth of standard sized connect 4 board
 int standardX = 7, standardY = 6;
 
+void displayList(struct node * list);
+void append(struct node ** list, int num, char player, char move);
+void prepend(struct node ** list, int num);
 // prototypes of functions used
 void runGame();
 // welcome function prototype of type void
@@ -27,6 +38,7 @@ void initArray(char board[standardY][standardX]);
 void play(char board[standardY][standardX]);
 // insert function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant), row of type integer and player of type char
 bool insert(char board[standardY][standardX], int row, char player);
+bool desert(char board[standardY][standardX], int row, char player);
 // check function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
 bool check(char board[standardY][standardX]);
 // checkHorizontal function prototype of type void that takes in a 2d char array of size 6 (standardX constant) x 7 (standardY constant)
@@ -43,6 +55,7 @@ int defineY();
 
 char* getPlayerName(bool player);
 // replayGame function prototype of type void
+struct node **getPlayerList(bool player);
 void replayGame();
 
 // main function of the programme which is used when the programme is run
@@ -175,7 +188,7 @@ void display(char board[standardY][standardX]) {
     // define variables 'i' and 'j' as integers
     int i, j;
     // clear the terminal so the it doesn't get too crowded and makes it easier on the eye
-    system("clear");
+    //system("clear");
     // printf Connect 4
     printf("\nConnect 4 \n\n");
 
@@ -204,42 +217,75 @@ void display(char board[standardY][standardX]) {
 
 void play(char board[standardY][standardX]) {
     // define input, result and wins variables as integers and set values to '0'
+    struct node *yellow;
+    yellow = NULL;
+    //red = NULL;
     bool player = true, result = false;
     char* playerName;
-    char move, cont;
+    char row, move, option;
     playerName = malloc(sizeof(char) * 7);
 
     for (;;) {
         // comment
         playerName = getPlayerName(player);
-        // Red will go first
+
         printf("Turn: %s \n", playerName);
-        // ask user to select a row
-        printf("Please select a row: ");
-        // scanf user's input
-        scanf(" %c", &move);
-        move = validateInput(move, standardX);
-        if (move != 0) {
-            // call insert function to assign users inputted to a space in the 'board' array
-            if (insert(board, move - 1, playerName[0])) {
-                // call display function to display updated board
-                display(board);
-                // call check function to see if user has won
-                result = check(board);
-                // if result is true then user has won
-                if (result) {
-                    printf("%s wins\n", playerName);
-                    break;
+        printf("1. Play\n");
+        printf("2. Undo\n");
+        printf("3. Redo\n");
+        printf("Please select an option: ");
+        scanf(" %c", &option);
+
+        option = validateInput(option, 3);
+        if (option != 0) {
+            if (option != 2) {
+                if (option == 1) {
+                    // ask user to select a row
+                    printf("Please select a row: ");
+                    // scanf user's input
+                    scanf(" %c", &row);
+                    row = validateInput(row, standardX);
+                    move = 'P';
+                } else {
+                    move = 'R';
+                    printf("Redo\n");
                 }
-                
-                player = !player;
-            } else {
+
+                if (row != 0) {
+                    // call insert function to assign users inputted to a space in the 'board' array
+                    if (insert(board, row - 1, playerName[0])) {
+                        // call display function to display updated board
+                        display(board);
+                        // call check function to see if user has won
+                        result = check(board);
+                        // if result is true then user has won
+                        if (result) {
+                            printf("%s wins\n", playerName);
+                            break;
+                        }
+
+                    } else {
+                        display(board);
+                        printf("Row is full, please select another\n");
+                    }
+                } else {
+                    display(board);
+                    printf("Please select a row between 1 and %d \n", standardX);
+                    continue;
+                }                
+            } else if (option == 2) {
+                move = 'U';
+                printf("Undo\n");
+                desert(board, row - 1, playerName[0]);
                 display(board);
-                printf("Row is full, please select another\n");
             }
+
+            append(&yellow, row, playerName[0], move);
+            displayList(yellow);
+            player = !player;
         } else {
             display(board);
-            printf("Please select a row between 1 and %d \n", standardX);
+            printf("Please select an option between 1 and 3 \n");
             continue;
         }
     }
@@ -254,6 +300,24 @@ bool insert(char board[standardY][standardX], int row, char player) {
             return true;
         } else if (i == standardY - 1) {
             return false;
+        }
+    }
+
+    return false;
+}
+
+bool desert(char board[standardY][standardX], int row, char player) {
+    for (int i = 0; i < standardY; i++) {
+        if (board[i][row] == player) {
+            board[i][row] = 'O';
+            break;
+        }
+    }
+
+    for (int j = 0; j < standardY; j++) {
+        if (board[j][row] == 'O' && (board[j - 1][row] == 'Y' || board[j - 1][row] == 'R')) {
+            board[j][row] = board[j - 1][row];
+            board[j - 1][row] = 'O';
         }
     }
 
@@ -344,4 +408,49 @@ int defineY() {
 
 void replayGame() {
     printf("Replay Game \n");
+}
+
+void append(struct node **list, int num, char player, char move)
+{
+    struct node *temp, *current = *list;
+    if (*list == NULL) {
+        *list = (struct node *)malloc(sizeof(struct node));
+        (*list)->prev = NULL;
+        (*list)->row = num;
+        (*list)->player = player;
+        (*list)->move = move;
+        (*list)->next = NULL;
+    } else {
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        temp = (struct node *)malloc(sizeof(struct node));
+        temp->row = num;
+        temp->player = player;
+        temp->move = move;
+        temp->next = NULL;
+        temp->prev = current;
+        current->next = temp;
+    }
+}
+
+void prepend(struct node **list, int num)
+{
+    struct node *temp;
+    temp = (struct node *)malloc(sizeof(struct node));
+    temp->prev= NULL;
+    temp->row = num;
+    temp->next = *list;
+
+    (*list)->prev = temp;
+    *list = temp;
+}
+
+void displayList(struct node *list)
+{
+    while (list != NULL) {
+        printf("%c => %c => %2d\t", list->player, list->move, list->row);
+        list = list->next;
+    }
+    printf("\n");
 }
