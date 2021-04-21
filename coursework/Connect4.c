@@ -10,8 +10,7 @@
 
 struct node
 {
-    int row;
-    char player, move;
+    char player, move, row;
     struct node * prev;
     struct node * next;
 };
@@ -217,13 +216,11 @@ void display(char board[standardY][standardX]) {
 
 void play(char board[standardY][standardX]) {
     // define input, result and wins variables as integers and set values to '0'
-    struct node *yellow;
-    yellow = NULL;
-    //red = NULL;
+    struct node *yellow = NULL, *red = NULL, *temp = NULL;
     bool player = true, result = false;
     char* playerName;
-    char row, move, option;
     playerName = malloc(sizeof(char) * 7);
+    char row, move, option;
 
     for (;;) {
         // comment
@@ -248,6 +245,8 @@ void play(char board[standardY][standardX]) {
                     move = 'P';
                 } else {
                     move = 'R';
+                    temp = player ? yellow : red;
+                    row = temp->row; 
                     printf("Redo\n");
                 }
 
@@ -256,6 +255,13 @@ void play(char board[standardY][standardX]) {
                     if (insert(board, row - 1, playerName[0])) {
                         // call display function to display updated board
                         display(board);
+                        if (player) {
+                            append(&yellow, row, playerName[0], move);
+                            displayList(yellow);
+                        } else {
+                            append(&red, row, playerName[0], move);
+                            displayList(red);
+                        }
                         // call check function to see if user has won
                         result = check(board);
                         // if result is true then user has won
@@ -263,7 +269,8 @@ void play(char board[standardY][standardX]) {
                             printf("%s wins\n", playerName);
                             break;
                         }
-
+                        
+                        player = !player;
                     } else {
                         display(board);
                         printf("Row is full, please select another\n");
@@ -275,14 +282,35 @@ void play(char board[standardY][standardX]) {
                 }                
             } else if (option == 2) {
                 move = 'U';
-                printf("Undo\n");
-                desert(board, row - 1, playerName[0]);
-                display(board);
-            }
+                temp = (struct node *)malloc(sizeof(struct node));
+                temp = player ? yellow : red;
+                if (desert(board, temp->row - 1, playerName[0])) {
+                    display(board);
+                    if (player) {
+                        append(&yellow, row, playerName[0], move);
+                        displayList(yellow);
+                    } else {
+                        append(&red, row, playerName[0], move);
+                        displayList(red);
+                    }
+                    
+                    result = check(board);
+                    // if result is true then user has won
+                    if (result) {
+                        printf("%s wins\n", playerName);
+                        break;
+                    }
 
-            append(&yellow, row, playerName[0], move);
-            displayList(yellow);
-            player = !player;
+                    free(temp);
+                    player = !player;
+                } else {
+                    display(board);
+                    printf("Cannot undo move \n");
+                    printf("%c\n", temp->row);
+                    printf("%d\n", temp->row);
+                    printf("%d\n", row);
+                }
+            }
         } else {
             display(board);
             printf("Please select an option between 1 and 3 \n");
@@ -311,6 +339,8 @@ bool desert(char board[standardY][standardX], int row, char player) {
         if (board[i][row] == player) {
             board[i][row] = 'O';
             break;
+        } else if (i == standardY - 1) {
+            return false;
         }
     }
 
@@ -321,7 +351,7 @@ bool desert(char board[standardY][standardX], int row, char player) {
         }
     }
 
-    return false;
+    return true;
 }
 
 bool check(char board[standardY][standardX]) {
