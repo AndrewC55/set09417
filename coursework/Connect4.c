@@ -10,6 +10,7 @@
 
 struct node
 {
+    int * id;
     char player, move, row;
     struct node * prev;
     struct node * next;
@@ -19,7 +20,8 @@ struct node
 int standardX = 7, standardY = 6;
 
 void displayList(struct node * list);
-void append(struct node ** list, int num, char player, char move);
+void append(struct node ** list, int num, char player, char move, int turn);
+int getUndo(struct node * list, int *turn, char token);
 void prepend(struct node ** list, int num);
 // prototypes of functions used
 void runGame();
@@ -216,8 +218,9 @@ void display(char board[standardY][standardX]) {
 
 void play(char board[standardY][standardX]) {
     // define input, result and wins variables as integers and set values to '0'
-    struct node *yellow = NULL, *red = NULL, *temp = NULL;
+    struct node *list = NULL;
     bool player = true, result = false;
+    int yellow = 0, red = 0, turn = 0;
     char* playerName;
     playerName = malloc(sizeof(char) * 7);
     char row, move, option;
@@ -235,6 +238,12 @@ void play(char board[standardY][standardX]) {
 
         option = validateInput(option, 3);
         if (option != 0) {
+            if (player) {
+                yellow++;
+            } else {
+                red++;
+            }
+            turn = player ? yellow : red;
             if (option != 2) {
                 if (option == 1) {
                     // ask user to select a row
@@ -245,8 +254,6 @@ void play(char board[standardY][standardX]) {
                     move = 'P';
                 } else {
                     move = 'R';
-                    temp = player ? yellow : red;
-                    row = temp->row; 
                     printf("Redo\n");
                 }
 
@@ -255,13 +262,8 @@ void play(char board[standardY][standardX]) {
                     if (insert(board, row - 1, playerName[0])) {
                         // call display function to display updated board
                         display(board);
-                        if (player) {
-                            append(&yellow, row, playerName[0], move);
-                            displayList(yellow);
-                        } else {
-                            append(&red, row, playerName[0], move);
-                            displayList(red);
-                        }
+                        append(&list, row, playerName[0], move, turn);
+                        displayList(list);
                         // call check function to see if user has won
                         result = check(board);
                         // if result is true then user has won
@@ -282,17 +284,11 @@ void play(char board[standardY][standardX]) {
                 }                
             } else if (option == 2) {
                 move = 'U';
-                temp = (struct node *)malloc(sizeof(struct node));
-                temp = player ? yellow : red;
-                if (desert(board, temp->row - 1, playerName[0])) {
+                row = getUndo(list, &turn, playerName[0]);
+                if (desert(board, row - 1, playerName[0])) {
                     display(board);
-                    if (player) {
-                        append(&yellow, row, playerName[0], move);
-                        displayList(yellow);
-                    } else {
-                        append(&red, row, playerName[0], move);
-                        displayList(red);
-                    }
+                    append(&list, row, playerName[0], move, turn);
+                    displayList(list);
                     
                     result = check(board);
                     // if result is true then user has won
@@ -301,13 +297,11 @@ void play(char board[standardY][standardX]) {
                         break;
                     }
 
-                    free(temp);
                     player = !player;
                 } else {
                     display(board);
                     printf("Cannot undo move \n");
-                    printf("%c\n", temp->row);
-                    printf("%d\n", temp->row);
+                    printf("%d\n", turn);
                     printf("%d\n", row);
                 }
             }
@@ -440,7 +434,7 @@ void replayGame() {
     printf("Replay Game \n");
 }
 
-void append(struct node **list, int num, char player, char move)
+void append(struct node **list, int num, char player, char move, int turn)
 {
     struct node *temp, *current = *list;
     if (*list == NULL) {
@@ -449,6 +443,7 @@ void append(struct node **list, int num, char player, char move)
         (*list)->row = num;
         (*list)->player = player;
         (*list)->move = move;
+        (*list)->id = 0;
         (*list)->next = NULL;
     } else {
         while (current->next != NULL) {
@@ -458,6 +453,7 @@ void append(struct node **list, int num, char player, char move)
         temp->row = num;
         temp->player = player;
         temp->move = move;
+        temp->id = &turn;
         temp->next = NULL;
         temp->prev = current;
         current->next = temp;
@@ -483,4 +479,23 @@ void displayList(struct node *list)
         list = list->next;
     }
     printf("\n");
+}
+
+int getUndo(struct node *list, int *turn, char token)
+{
+    if (list->prev == NULL) {
+        printf("NULL\n");
+    }
+    while (list->prev != NULL) {
+        if (list->id == turn && list->player == token) {
+            while (list->next != NULL) {
+                list->id++;
+                list = list->next;
+            }
+            return validateInput(list->row, standardX);
+        }
+        list = list->prev;
+    }
+
+    return 0;
 }
