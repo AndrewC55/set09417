@@ -21,6 +21,7 @@ struct stack
 void initStack(struct stack * s);
 void push(struct stack *s, int item);
 int *pop(struct stack *s);
+int *depop(struct stack *s);
 // prototypes of functions used
 void runGame();
 // welcome function prototype of type void
@@ -213,9 +214,11 @@ void display(char board[standardY][standardX]) {
 }
 
 void play(char board[standardY][standardX]) {
-    struct stack yellow, red;
-    initStack(&yellow);
-    initStack(&red);
+    struct stack yellowPlay, redPlay, yellowUndo, redUndo;
+    initStack(&yellowPlay);
+    initStack(&redPlay);
+    initStack(&yellowUndo);
+    initStack(&redUndo);
     bool player = true, result = false;
     int row = 0;
     char* playerName;
@@ -244,6 +247,11 @@ void play(char board[standardY][standardX]) {
                     row = validateInput(input, standardX);
                     move = 'P';
                 } else {
+                    if (player) {
+                        row = *pop(&yellowUndo);
+                    } else {
+                        row = *pop(&redUndo);                        
+                    }
                     move = 'R';
                 }
 
@@ -251,9 +259,9 @@ void play(char board[standardY][standardX]) {
                     // call insert function to assign users inputted to a space in the 'board' array
                     if (insert(board, row - 1, playerName[0])) {
                         if (player) {
-                            push(&yellow, row);
+                            push(&yellowPlay, row);
                         } else {
-                            push(&red, row);
+                            push(&redPlay, row);
                         }
                         // call display function to display updated board
                         display(board);
@@ -277,9 +285,11 @@ void play(char board[standardY][standardX]) {
                 }                
             } else if (option == 2) {
                 if (player) {
-                    row = *pop(&yellow);
+                    row = *pop(&yellowPlay);
+                    push(&yellowUndo, row);
                 } else {
-                    row = *pop(&red);
+                    row = *pop(&redPlay);
+                    push(&redUndo, row);
                 }
                 move = 'U';
                 if (desert(board, row - 1, playerName[0])) {
@@ -460,6 +470,19 @@ void push(struct stack *s, int item)
 }
 
 int *pop(struct stack *s)
+{
+    int *data;
+    if (s->top == -1) {
+        printf("Stack is empty\n");
+        return NULL;
+    }
+
+    data = &s->array[s->top];
+    s->top--;
+    return data;
+}
+
+int *depop(struct stack *s)
 {
     int *data;
     if (s->top == -1) {
