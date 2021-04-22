@@ -7,7 +7,7 @@
 #include <time.h>
 
 #define maxBoardSize 20
-#define STACK_SIZE 240
+#define STACK_SIZE 42
 
 // define length and breadth of standard sized connect 4 board
 int standardX = 7, standardY = 6;
@@ -213,7 +213,9 @@ void display(char board[standardY][standardX]) {
 }
 
 void play(char board[standardY][standardX]) {
-    struct node *list = NULL;
+    struct stack yellow, red;
+    initStack(&yellow);
+    initStack(&red);
     bool player = true, result = false;
     int row = 0;
     char* playerName;
@@ -248,6 +250,11 @@ void play(char board[standardY][standardX]) {
                 if (row != 0) {
                     // call insert function to assign users inputted to a space in the 'board' array
                     if (insert(board, row - 1, playerName[0])) {
+                        if (player) {
+                            push(&yellow, row);
+                        } else {
+                            push(&red, row);
+                        }
                         // call display function to display updated board
                         display(board);
                         // call check function to see if user has won
@@ -269,6 +276,11 @@ void play(char board[standardY][standardX]) {
                     continue;
                 }                
             } else if (option == 2) {
+                if (player) {
+                    row = *pop(&yellow);
+                } else {
+                    row = *pop(&red);
+                }
                 move = 'U';
                 if (desert(board, row - 1, playerName[0])) {
                     display(board);
