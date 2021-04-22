@@ -481,16 +481,3 @@ int *pop(struct stack *s)
     s->top--;
     return data;
 }
-
-int *depop(struct stack *s)
-{
-    int *data;
-    if (s->top == -1) {
-        printf("Stack is empty\n");
-        return NULL;
-    }
-
-    data = &s->array[s->top];
-    s->top--;
-    return data;
-}
