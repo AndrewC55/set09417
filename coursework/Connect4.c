@@ -7,22 +7,20 @@
 #include <time.h>
 
 #define maxBoardSize 20
-
-struct node
-{
-    int * id;
-    char player, move, row;
-    struct node * prev;
-    struct node * next;
-};
+#define STACK_SIZE 240
 
 // define length and breadth of standard sized connect 4 board
 int standardX = 7, standardY = 6;
 
-void displayList(struct node * list);
-void append(struct node ** list, int num, char player, char move, int turn);
-int getUndo(struct node * list, int *turn, char token);
-void prepend(struct node ** list, int num);
+struct stack 
+{
+    int array[STACK_SIZE];
+    int top;
+};
+
+void initStack(struct stack * s);
+void push(struct stack *s, int item);
+int *pop(struct stack *s);
 // prototypes of functions used
 void runGame();
 // welcome function prototype of type void
@@ -55,8 +53,6 @@ int defineX();
 int defineY();
 
 char* getPlayerName(bool player);
-// replayGame function prototype of type void
-struct node **getPlayerList(bool player);
 void replayGame();
 
 // main function of the programme which is used when the programme is run
@@ -217,13 +213,12 @@ void display(char board[standardY][standardX]) {
 }
 
 void play(char board[standardY][standardX]) {
-    // define input, result and wins variables as integers and set values to '0'
     struct node *list = NULL;
     bool player = true, result = false;
-    int yellow = 0, red = 0, turn = 0;
+    int row = 0;
     char* playerName;
     playerName = malloc(sizeof(char) * 7);
-    char row, move, option;
+    char input, move, option;
 
     for (;;) {
         // comment
@@ -238,23 +233,16 @@ void play(char board[standardY][standardX]) {
 
         option = validateInput(option, 3);
         if (option != 0) {
-            if (player) {
-                yellow++;
-            } else {
-                red++;
-            }
-            turn = player ? yellow : red;
             if (option != 2) {
                 if (option == 1) {
                     // ask user to select a row
                     printf("Please select a row: ");
                     // scanf user's input
-                    scanf(" %c", &row);
-                    row = validateInput(row, standardX);
+                    scanf(" %c", &input);
+                    row = validateInput(input, standardX);
                     move = 'P';
                 } else {
                     move = 'R';
-                    printf("Redo\n");
                 }
 
                 if (row != 0) {
@@ -262,8 +250,6 @@ void play(char board[standardY][standardX]) {
                     if (insert(board, row - 1, playerName[0])) {
                         // call display function to display updated board
                         display(board);
-                        append(&list, row, playerName[0], move, turn);
-                        displayList(list);
                         // call check function to see if user has won
                         result = check(board);
                         // if result is true then user has won
@@ -284,11 +270,8 @@ void play(char board[standardY][standardX]) {
                 }                
             } else if (option == 2) {
                 move = 'U';
-                row = getUndo(list, &turn, playerName[0]);
                 if (desert(board, row - 1, playerName[0])) {
                     display(board);
-                    append(&list, row, playerName[0], move, turn);
-                    displayList(list);
                     
                     result = check(board);
                     // if result is true then user has won
@@ -301,8 +284,6 @@ void play(char board[standardY][standardX]) {
                 } else {
                     display(board);
                     printf("Cannot undo move \n");
-                    printf("%d\n", turn);
-                    printf("%d\n", row);
                 }
             }
         } else {
@@ -312,6 +293,23 @@ void play(char board[standardY][standardX]) {
         }
     }
     
+    for (;;) {
+        printf("Save game?\n");
+        printf("1. Yes\n");
+        printf("2. No\n");
+        printf("Save: ");
+        scanf(" %c", &input);
+        input = validateInput(input, 2);
+        if (input != 0) {
+            if (input == 1) {
+                printf("Save\n");
+                break;
+            } else {
+                printf("No Save\n");
+                break;
+            }
+        }
+    }
     runGame();
 }
 
@@ -400,7 +398,6 @@ int validateInput(char input, int max) {
             return input;
         }
     }
-
     return 0;
 }
 
@@ -434,68 +431,31 @@ void replayGame() {
     printf("Replay Game \n");
 }
 
-void append(struct node **list, int num, char player, char move, int turn)
+void initStack(struct stack *s)
 {
-    struct node *temp, *current = *list;
-    if (*list == NULL) {
-        *list = (struct node *)malloc(sizeof(struct node));
-        (*list)->prev = NULL;
-        (*list)->row = num;
-        (*list)->player = player;
-        (*list)->move = move;
-        (*list)->id = 0;
-        (*list)->next = NULL;
-    } else {
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        temp = (struct node *)malloc(sizeof(struct node));
-        temp->row = num;
-        temp->player = player;
-        temp->move = move;
-        temp->id = &turn;
-        temp->next = NULL;
-        temp->prev = current;
-        current->next = temp;
-    }
+    s->top = -1;
 }
 
-void prepend(struct node **list, int num)
+void push(struct stack *s, int item)
 {
-    struct node *temp;
-    temp = (struct node *)malloc(sizeof(struct node));
-    temp->prev= NULL;
-    temp->row = num;
-    temp->next = *list;
+    if (s->top == STACK_SIZE - 1) {
+        printf("Stack is full. Couldn't push `%d` onto stack\n", item);
+    }
 
-    (*list)->prev = temp;
-    *list = temp;
+    s->top++;
+    s->array[s->top] = item;
+    printf("%d\n", s->array[s->top]);
 }
 
-void displayList(struct node *list)
+int *pop(struct stack *s)
 {
-    while (list != NULL) {
-        printf("%c => %c => %2d\t", list->player, list->move, list->row);
-        list = list->next;
-    }
-    printf("\n");
-}
-
-int getUndo(struct node *list, int *turn, char token)
-{
-    if (list->prev == NULL) {
-        printf("NULL\n");
-    }
-    while (list->prev != NULL) {
-        if (list->id == turn && list->player == token) {
-            while (list->next != NULL) {
-                list->id++;
-                list = list->next;
-            }
-            return validateInput(list->row, standardX);
-        }
-        list = list->prev;
+    int *data;
+    if (s->top == -1) {
+        printf("Stack is empty\n");
+        return NULL;
     }
 
-    return 0;
+    data = &s->array[s->top];
+    s->top--;
+    return data;
 }
