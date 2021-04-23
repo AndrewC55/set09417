@@ -6,22 +6,30 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define maxBoardSize 20
+#define MAX_BOARD_SIZE 20
 #define STACK_SIZE 42
 
 // define length and breadth of standard sized connect 4 board
 int standardX = 7, standardY = 6;
 
-struct stack 
+struct stack
 {
     int array[STACK_SIZE];
     int top;
+};
+
+struct node
+{
+    char player, move;
+    int row;
+    struct node * link;
 };
 
 void initStack(struct stack * s);
 void push(struct stack *s, int item);
 int *pop(struct stack *s);
 int *depop(struct stack *s);
+void append(struct node ** list, int row, char player, char move);
 // prototypes of functions used
 void runGame();
 // welcome function prototype of type void
@@ -215,6 +223,7 @@ void display(char board[standardY][standardX]) {
 
 void play(char board[standardY][standardX]) {
     struct stack yellowPlay, redPlay, yellowUndo, redUndo;
+    struct node * list;
     initStack(&yellowPlay);
     initStack(&redPlay);
     initStack(&yellowUndo);
@@ -271,6 +280,7 @@ void play(char board[standardY][standardX]) {
                         } else {
                             push(&redPlay, row);
                         }
+                        append(&list, row, playerName[0], move);
                         // call display function to display updated board
                         display(board);
                         // call check function to see if user has won
@@ -307,8 +317,8 @@ void play(char board[standardY][standardX]) {
                 }
                 move = 'U';
                 if (desert(board, row - 1, playerName[0])) {
+                    append(&list, row, playerName[0], move);
                     display(board);
-                    
                     result = check(board);
                     // if result is true then user has won
                     if (result) {
@@ -452,7 +462,7 @@ int defineX() {
     printf("Please enter length of the board (number of rows across)\n");
     // scanf user's input
     scanf(" %s", &length);
-    return validateInput(length, maxBoardSize);
+    return validateInput(length, MAX_BOARD_SIZE);
 }
 
 int defineY() {
@@ -460,7 +470,7 @@ int defineY() {
     printf("Please enter height of the board (number of rows upwards)\n");
     // scanf user's input
     scanf(" %s", &height);
-    return validateInput(height, maxBoardSize);
+    return validateInput(height, MAX_BOARD_SIZE);
 }
 
 void replayGame() {
@@ -489,4 +499,28 @@ int *pop(struct stack *s)
     data = &s->array[s->top];
     s->top--;
     return data;
+}
+
+void append(struct node **list, int row, char player, char move)
+{
+    struct node *temp, *r;
+    if (*list == NULL) {
+        temp = (struct node *)malloc(sizeof(struct node));
+        temp->player = player;
+        temp->move = move;
+        temp->row = row;
+        temp->link = NULL;
+        *list = temp;
+    } else {
+        temp = *list;
+        while (temp->link != NULL) {
+            temp = temp->link;
+            r = (struct node *)malloc(sizeof(struct node));
+            r->player = player;
+            r->move = move;
+            r->row = row;
+            r->link = NULL;
+            temp->link = r;
+        }
+    }
 }
