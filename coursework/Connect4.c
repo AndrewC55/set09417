@@ -186,7 +186,7 @@ void display(char board[standardY][standardX]) {
     // define variables 'i' and 'j' as integers
     int i, j;
     // clear the terminal so the it doesn't get too crowded and makes it easier on the eye
-    //system("clear");
+    system("clear");
     // printf Connect 4
     printf("\nConnect 4 \n\n");
 
@@ -221,6 +221,7 @@ void play(char board[standardY][standardX]) {
     initStack(&redUndo);
     bool player = true, result = false;
     int row = 0;
+    int *temp = NULL;
     char* playerName;
     playerName = malloc(sizeof(char) * 7);
     char input, move, option;
@@ -248,9 +249,16 @@ void play(char board[standardY][standardX]) {
                     move = 'P';
                 } else {
                     if (player) {
-                        row = *pop(&yellowUndo);
+                        temp = pop(&yellowUndo);
                     } else {
-                        row = *pop(&redUndo);                        
+                        temp = pop(&redUndo);
+                    }
+                    if (temp) {
+                        row = *temp;
+                    } else {
+                        display(board);
+                        printf("Cannot redo move\n");
+                        continue;
                     }
                     move = 'R';
                 }
@@ -285,11 +293,17 @@ void play(char board[standardY][standardX]) {
                 }                
             } else if (option == 2) {
                 if (player) {
-                    row = *pop(&yellowPlay);
-                    push(&yellowUndo, row);
+                    temp = pop(&yellowPlay);
+                    if (temp) {
+                        row = *temp;
+                        push(&yellowUndo, row);
+                    }
                 } else {
-                    row = *pop(&redPlay);
-                    push(&redUndo, row);
+                    temp = pop(&redPlay);
+                    if (temp) {
+                        row = *temp;
+                        push(&redUndo, row);
+                    }
                 }
                 move = 'U';
                 if (desert(board, row - 1, playerName[0])) {
@@ -460,10 +474,6 @@ void initStack(struct stack *s)
 
 void push(struct stack *s, int item)
 {
-    if (s->top == STACK_SIZE - 1) {
-        printf("Stack is full. Couldn't push `%d` onto stack\n", item);
-    }
-
     s->top++;
     s->array[s->top] = item;
     printf("%d\n", s->array[s->top]);
@@ -473,7 +483,6 @@ int *pop(struct stack *s)
 {
     int *data;
     if (s->top == -1) {
-        printf("Stack is empty\n");
         return NULL;
     }
 
