@@ -32,11 +32,64 @@ int main(void)
 
     int *i  = NULL;
 
-    for (int index = 0; index < MAX; index++) {
-        i = pop(&s);
-        if (i) {
-            printf("Items popped: %d\n", *i);
-        }
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
+    }
+
+    i = pop(&s);
+    if (i) {
+        printf("Items popped: %d\n", *i);
     }
 
     return 0;    
