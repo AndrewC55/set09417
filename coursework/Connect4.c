@@ -475,7 +475,84 @@ int defineY() {
 }
 
 void replayGame() {
-    printf("Replay Game \n");
+    int gameCount = 1, gameSelect = 1, gameNumber, row;
+    char line[256], input, player, move;
+    FILE *file;
+    char board[standardY][standardX];
+    initArray(board);
+    bool result;
+
+    file = fopen("games/gamelog.txt", "r");
+    if (file) {
+        while (fgets(line, sizeof(line), file)) {
+            if (strstr(line, "GAME") != NULL) {
+                gameCount++;
+                printf("%s", line);
+            }
+        }
+    }
+    fclose(file);
+
+    for (;;) {
+        printf("Please select a game you to replay: ");
+        scanf(" %s", &input);
+        gameNumber = validateInput(input, gameCount);
+        if (gameNumber != 0) {
+            break;
+        }
+    }
+
+    file = fopen("games/gamelog.txt", "r");
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, "GAME") != NULL) {
+            if (gameSelect == gameNumber) {
+                display(board);
+                while (fgets(line, sizeof(line), file)) {
+                    if (strstr(line, "END") == NULL) {
+                        player = line[8];
+                        move = line[17];
+                        row = validateInput(line[25], standardX);
+                        char* playerName;
+                        playerName = malloc(sizeof(char) * 7);
+                        playerName = player == 'Y' ? "Yellow" : "Red";
+                        switch (move) {
+                            case 'P':
+                                printf("%s played row %d", playerName, row);
+                                break;
+                            case 'U':
+                                printf("%s undone row %d", playerName, row);
+                                break;
+                            case 'R':
+                                printf("%s redone row %d", playerName, row);
+                                break;
+                            default:
+                                break;
+                        }
+                        if (move == 'P' || move == 'R') {
+                            insert(board, row - 1, player);
+                            display(board);
+                        } else {
+                            desert(board, row - 1, player);
+                            display(board);
+                        }
+
+                        result = check(board);
+                        // if result is true then user has won
+                        if (result) {
+                            printf("%s wins\n", playerName);
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                break;
+            } else {
+                gameSelect++;
+            }
+        }
+    }
+    fclose(file);
 }
 
 void initStack(struct stack *s)
@@ -500,18 +577,6 @@ int *pop(struct stack *s)
     data = &s->array[s->top];
     s->top--;
     return data;
-}
-
-int count(struct node * list)
-{
-    int count = 0;
-    while(list != NULL)
-    {
-        list = list->link;
-        count++;
-    }
-
-    return count;
 }
 
 void append(struct node **list, int row, char player, char move)
@@ -540,12 +605,27 @@ void append(struct node **list, int row, char player, char move)
 
 void saveGame(struct node ** list)
 {
-    FILE *newFile;
-    newFile = fopen("newfile.txt", "a");
+    int gameNumber = 1;
+    char line[256];
+    FILE *file;
+
+    file = fopen("games/gamelog.txt", "r");
+    if (file) {
+        while (fgets(line, sizeof(line), file)) {
+            if (strstr(line, "GAME") != NULL) {
+                gameNumber++;
+            }
+        }
+    }
+
+    file = fopen("games/gamelog.txt", "a");
     struct node * iterator = *list;
+    fprintf(file, "GAME %d\n", gameNumber);
     while (iterator != NULL) {
-        fprintf(newFile, "Player: %c, Move: %c, Row: %d\n", iterator->player, iterator->move, iterator->row);
+        fprintf(file, "Player: %c, Move: %c, Row: %d\n", iterator->player, iterator->move, iterator->row);
         iterator = iterator->link;
     }
-    fclose(newFile);
+
+    fprintf(file, "END\n");
+    fclose(file);
 }
