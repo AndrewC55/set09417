@@ -29,7 +29,9 @@ void initStack(struct stack * s);
 void push(struct stack *s, int item);
 int *pop(struct stack *s);
 int *depop(struct stack *s);
+int count(struct node * list);
 void append(struct node ** list, int row, char player, char move);
+void saveGame(struct node ** list);
 // prototypes of functions used
 void runGame();
 // welcome function prototype of type void
@@ -194,7 +196,7 @@ void display(char board[standardY][standardX]) {
     // define variables 'i' and 'j' as integers
     int i, j;
     // clear the terminal so the it doesn't get too crowded and makes it easier on the eye
-    system("clear");
+    //system("clear");
     // printf Connect 4
     printf("\nConnect 4 \n\n");
 
@@ -223,7 +225,7 @@ void display(char board[standardY][standardX]) {
 
 void play(char board[standardY][standardX]) {
     struct stack yellowPlay, redPlay, yellowUndo, redUndo;
-    struct node * list;
+    struct node * list = NULL;
     initStack(&yellowPlay);
     initStack(&redPlay);
     initStack(&yellowUndo);
@@ -349,11 +351,10 @@ void play(char board[standardY][standardX]) {
         if (input != 0) {
             if (input == 1) {
                 printf("Save\n");
-                break;
-            } else {
-                printf("No Save\n");
+                saveGame(&list);
                 break;
             }
+            break;
         }
     }
     runGame();
@@ -501,6 +502,18 @@ int *pop(struct stack *s)
     return data;
 }
 
+int count(struct node * list)
+{
+    int count = 0;
+    while(list != NULL)
+    {
+        list = list->link;
+        count++;
+    }
+
+    return count;
+}
+
 void append(struct node **list, int row, char player, char move)
 {
     struct node *temp, *r;
@@ -515,12 +528,24 @@ void append(struct node **list, int row, char player, char move)
         temp = *list;
         while (temp->link != NULL) {
             temp = temp->link;
-            r = (struct node *)malloc(sizeof(struct node));
-            r->player = player;
-            r->move = move;
-            r->row = row;
-            r->link = NULL;
-            temp->link = r;
         }
+        r = (struct node *)malloc(sizeof(struct node));
+        r->player = player;
+        r->move = move;
+        r->row = row;
+        r->link = NULL;
+        temp->link = r;
     }
+}
+
+void saveGame(struct node ** list)
+{
+    FILE *newFile;
+    newFile = fopen("newfile.txt", "a");
+    struct node * iterator = *list;
+    while (iterator != NULL) {
+        fprintf(newFile, "Player: %c, Move: %c, Row: %d\n", iterator->player, iterator->move, iterator->row);
+        iterator = iterator->link;
+    }
+    fclose(newFile);
 }
