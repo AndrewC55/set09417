@@ -607,23 +607,49 @@ char* getPlayerName(bool player) {
 // defineX function is used for asking the user to input the length of a custom sized board
 int defineX() {
     char length;
-    // ask the user to input length
-    printf("Please enter length of the board (number of rows across): ");
-    // scanf user's input
-    scanf(" %c", &length);
-    // validate input and return
-    return validateInput(length, MAX_BOARD_SIZE);
+    int boardLength;
+    for (;;) {
+        // ask the user to input length
+        printf("Please enter length of the board (number of rows across): ");
+        // scanf user's input
+        scanf(" %c", &length);
+        // validate input and assign it to boardLength
+        boardLength = validateInput(length, MAX_BOARD_SIZE);
+        // if boardLength is valid break loop
+        if (boardLength != 0) {
+            break;
+        } else {
+            system("clear");
+            printf("Please select a number between 1 and 9\n");
+        }
+    }
+
+    // return boardLength
+    return boardLength;
 }
 
 // defineY function is used for asking the user to input the height of a custom sized board
 int defineY() {
     char height;
-    // ask the user to input height
-    printf("Please enter height of the board (number of rows upwards): ");
-    // scanf user's input
-    scanf(" %c", &height);
-    // validate input and return
-    return validateInput(height, MAX_BOARD_SIZE);
+    int boardHeight;
+    for (;;) {
+        // ask the user to input height
+        printf("Please enter height of the board (number of rows upwards): ");
+        // scanf user's input
+        scanf(" %c", &height);
+        // validate input and assign it to boardHeight
+        boardHeight = validateInput(height, MAX_BOARD_SIZE);
+        // if boardHeight is valid break loop
+        if (boardHeight != 0) {
+            break;
+        } else {
+            system("clear");
+            printf("Please select a number between 1 and 9\n");
+        }
+    }
+
+    // return boardHeight
+    return boardHeight;
 }
 
 void replayGame() {
@@ -653,7 +679,7 @@ void replayGame() {
             }
         }
     }
-    // close file
+    // close file as file has been looped through and is at the end
     fclose(file);
 
     // infinite for loop
