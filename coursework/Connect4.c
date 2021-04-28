@@ -6,8 +6,10 @@
 #include <stdbool.h>
 #include <time.h>
 
+// maximum supported board size for length and breadth
 #define MAX_BOARD_SIZE 9
-#define STACK_SIZE 42
+// size of spaces on max board size
+#define STACK_SIZE 81
 
 // define length and breadth of standard sized connect 4 board
 int standardX = 7, standardY = 6;
@@ -15,7 +17,7 @@ int standardX = 7, standardY = 6;
 // struct for the stack to be used in the undo and redo feature
 struct stack
 {
-    // integer array for storing the rows that the user has inputted of size 42 (size of standard board)
+    // integer array for storing the rows that the user has inputted of size 81 (size of maximum supported board size)
     int array[STACK_SIZE];
     // integer variable value top indicates the latest element added to the array
     int top;
@@ -79,10 +81,12 @@ int *pop(struct stack *s);
 void append(struct node ** list, int row, char player, char move);
 // saveGame function of type void takes in struct node ** 
 void saveGame(struct node ** list);
+// replayGame function of type void
 void replayDelay();
 
 // main function of the programme which is used when the programme is run
 int main(int argc, char* argv[]) {
+    // calls runGame function to start the game
     runGame();
     return 0;
 }
@@ -96,15 +100,15 @@ void runGame() {
     // switch statement for usage of the returned 'option' integer
     switch (option) {
     case 1:
-        // if '1' is returned then 'createBoard' function is called
+        // if '1' is returned then createBoard function is called
         createBoard();
         break;
     case 2:
-        // if '2' is returned then 'replayGame' function is called
+        // if '2' is returned then replayGame function is called
         replayGame();
         break;
     case 3:
-        // if '3' is returned then game is exited via the c 'exit()' command
+        // if '3' is returned then game is exited via the c exit command
         exit(0);
         break;
     default:
@@ -134,15 +138,16 @@ void welcome() {
 
 // options function used to return users input
 int options() {
-    // define option char as '0'
+    // define option char
     char option;
 
     for (;;) {
         // Ask user what option they would like to select
-        printf("Please select an option below \n");
-        printf("1. Play \n");
-        printf("2. Re-watch previous game \n");
-        printf("3. Quit \n");
+        printf("Please select an option below\n");
+        printf("1. Play\n");
+        printf("2. Re-watch previous game\n");
+        printf("3. Quit\n");
+        printf("Please select an option: ");
         // Take in user's option
         scanf(" %c", &option);
         // Validate that user's input is in range (1-3)
@@ -511,80 +516,113 @@ bool check(char board[standardY][standardX]) {
     return checkHorizontal(board) || checkVertical(board) || checkDiagonal(board);
 }
 
+// checkHorizontal function returns if a win has occurred horizontally
 bool checkHorizontal(char board[standardY][standardX]) {
     int i, j;
+    // for loop for the height of the board first
     for (i = 0; i < standardY; i++) {
+        // then for loop through the length of the board
         for (j = 0; j < standardX; j++) {
+            // if the token is the same for 4 spaces in a row horizontally then true is returned
             if (board[i][j] == board[i][j + 1] && board[i][j] == board[i][j + 2] && board[i][j] == board[i][j + 3] && board[i][j] != 'O') {
                 return true;
             }
         }
     }
 
+    // if full board has been looped through without a win then return false
     return false;
 }
 
+// checkVertical function returns if a win has occurred vertically
 bool checkVertical(char board[standardY][standardX]) {
     int i, j;
+    // for loop for the length of the board first
     for (i = 0; i < standardX; i++) {
+        // then for loop through the height of the board
         for (j = 0; j < standardY; j++) {
+            // if the token is the same for 4 spaces in a row vertically then true is returned
             if (board[j][i] == board[j + 1][i] && board[j][i] == board[j + 2][i] && board[j][i] == board[j + 3][i] && board[j][i] != 'O') {
                 return true;
             }
         }
     }
 
+    // if full board has been looped through without a win then return false
     return false;
 }
 
+// checkDiagonal function returns if a win has occurred diagonally
 bool checkDiagonal(char board[standardY][standardX]) {
-    int i, j, count1, count2;
+    int i, j;
+    // for loop for the height of the board first
     for (i = 0; i < standardY; i++) {
+        // then for loop through the length of the board
         for (j = 0; j < standardX; j++) {
             if (board[i][j] == board[i + 1][j + 1] && board[i][j] == board[i + 2][j + 2] && board[i][j] == board[i + 3][j + 3] && board[i][j] != 'O') {
+                // if the token is the same for 4 spaces in a row diagonally left to right then true is returned
                 return true;
             } else if (board[i][j] == board[i - 1][j + 1] && board[i][j] == board[i - 2][j + 2] && board[i][j] == board[i - 3][j + 3] && board[i][j] != 'O') {
+                // if the token is the same for 4 spaces in a row diagonally right to left then true is returned
                 return true;
             }
         }
     }
 
+    // if full board has been looped through without a win then return false
     return false;
 }
 
+// validateInput will return an integer value by converting a char inputted by the user to an integer in a range
 int validateInput(char input, int max) {
+    // if char entered is digit then continue
     if (isdigit(input)) {
+        // char to integer conversion isn't the best as when casting a char to an int it will add 48 so 48 must be subtracted when casting
         input = (int)input - 48;
+        // if input is more than or equal 1 but not more than or equal to the max (in range e.g. 1 to 3) then casted integer is returned
         if (input >= 1 && input <= max) {
             return input;
         }
     }
+
+    // if char is not digit or not in range then 0 is returned
     return 0;
 }
 
+// getPlayerName returns the pointer of the static (will keeps it's value inside memory each time it is called) name of the player
 char* getPlayerName(bool player) {
-    static char red[4] = "Red";
+    // declare static char for yellow player
     static char yellow[7] = "Yellow";
+    // declare static char for red player
+    static char red[4] = "Red";
+    // if player is true (yellow) return yellow
     if (player) {
         return yellow;
     }
 
+    // if player is false (red) return red
     return red;
 }
 
+// defineX function is used for asking the user to input the length of a custom sized board
 int defineX() {
     char length;
+    // ask the user to input length
     printf("Please enter length of the board (number of rows across): ");
     // scanf user's input
     scanf(" %c", &length);
+    // validate input and return
     return validateInput(length, MAX_BOARD_SIZE);
 }
 
+// defineY function is used for asking the user to input the height of a custom sized board
 int defineY() {
     char height;
+    // ask the user to input height
     printf("Please enter height of the board (number of rows upwards): ");
     // scanf user's input
     scanf(" %c", &height);
+    // validate input and return
     return validateInput(height, MAX_BOARD_SIZE);
 }
 
@@ -598,150 +636,231 @@ void replayGame() {
     FILE *file;
     bool result;
 
+    // list available tgames to user
+    printf("Available games to be replayed:\n");
+    // open gamelog file for reading
     file = fopen("games/gamelog.txt", "r");
+    // if file exists
     if (file) {
+        // while file's line is not blank
         while (fgets(line, sizeof(line), file)) {
+            // if line contains "GAME" string
             if (strstr(line, "GAME") != NULL) {
+                // increment gameCount
                 gameCount++;
+                // print GAME number and board size
                 printf("%s", line);
             }
         }
     }
+    // close file
     fclose(file);
 
+    // infinite for loop
     for (;;) {
+        // ask user to input game to replay
         printf("Please select a game you to replay: ");
+        // scan user's input in
         scanf(" %c", &input);
+        // validate user's input
         gameNumber = validateInput(input, gameCount);
+        // if gameNumber is valid break infinite loop and continue through the function
         if (gameNumber != 0) {
             break;
         }
     }
 
+    // reopen gamelog file
     file = fopen("games/gamelog.txt", "r");
+    // while file's line is not blank
     while (fgets(line, sizeof(line), file)) {
+        // if line contains "GAME"
         if (strstr(line, "GAME") != NULL) {
+            // if incremented gameSelect is equal to user's input
             if (gameSelect == gameNumber) {
+                // define board size
                 char board[standardY][standardX];
+                // init array by setting all spaces to 'O'
                 initArray(board);
+                // while file's line is not blank (start reading game)
                 while (fgets(line, sizeof(line), file)) {
+                    // if line doesn't contain "END" (end of game)
                     if (strstr(line, "END") == NULL) {
+                        // define player
                         player = line[8];
+                        // define move
                         move = line[17];
+                        // validate row
                         row = validateInput(line[25], standardX);
+                        // define playerName
                         playerName = player == 'Y' ? "Yellow" : "Red";
+                        // if move is a play or redo
                         if (move == 'P' || move == 'R') {
+                            // insert into board array
                             insert(board, row - 1, player);
                             playerMove = move == 'P' ? "played" : "redone";
                         } else {
+                            // if move is undo
+                            // desert from board array
                             desert(board, row - 1, player);
                             playerMove = "undone";
                         }
+                        // display board
                         display(board);
+                        // tell user's what move has been made by what player
                         printf("%s %s row %d\n", playerName, playerMove, row);
 
+                        // check if someone has won
                         result = check(board);
                         // if result is true then user has won
                         if (result) {
+                            // display winner and break the loop
                             printf("%s wins\n", playerName);
+                            replayDelay();
                             break;
                         }
-
+                        
+                        // delay for a few seconds so that the user's can see what moves have been made
                         replayDelay();
                     } else {
+                        // if line conatins "END" that means that the game is over but no winner has been declared
                         break;
                     }
                 }
+                // break loop
                 break;
             } else {
+                // increment gameSelect until it matches the user's input
                 gameSelect++;
             }
         }
     }
 
+    // close file
     fclose(file);
+    // take user's back to the start
     runGame();
 }
 
+// initStack is used for initialising stacks by setting the tops to -1
 void initStack(struct stack *s)
 {
     s->top = -1;
 }
 
+// push is used for pushing integer values to a stack
 void push(struct stack *s, int item)
 {
+    // increment top of stack
     s->top++;
+    // assing item to the top of the stack
     s->array[s->top] = item;
-    printf("%d\n", s->array[s->top]);
 }
 
+// pop function is
 int *pop(struct stack *s)
 {
+    // create integer pointer
     int *data;
+    // if stack is empty return NULL
     if (s->top == -1) {
         return NULL;
     }
 
+    // if stack is not empty take the top (latest item added) item
     data = &s->array[s->top];
+    // decrement the top as previous top item doesn't exist in the stack anymore
     s->top--;
+    // return popped item
     return data;
 }
 
+// append function is used to append row, move and player to a linked list so to be used later when saving current game
 void append(struct node **list, int row, char player, char move)
 {
-    struct node *temp, *r;
+    // create two temporary nodes to protect list and link properly
+    struct node *temp1, *temp2;
+    // if list is NULL (new)
     if (*list == NULL) {
-        temp = (struct node *)malloc(sizeof(struct node));
-        temp->player = player;
-        temp->move = move;
-        temp->row = row;
-        temp->link = NULL;
-        *list = temp;
+        // define first temporary node as size of list
+        temp1 = (struct node *)malloc(sizeof(struct node));
+        // assign values to temporary node
+        temp1->player = player;
+        temp1->move = move;
+        temp1->row = row;
+        // next node doesn't exist as list is new so it is NULL
+        temp1->link = NULL;
+        // assign list as temporary node
+        *list = temp1;
     } else {
-        temp = *list;
-        while (temp->link != NULL) {
-            temp = temp->link;
+        // temporary node is defines as list
+        temp1 = *list;
+        // while temporary node (list) doesn't have a next node define temporary node as next node
+        while (temp1->link != NULL) {
+            temp1 = temp1->link;
         }
-        r = (struct node *)malloc(sizeof(struct node));
-        r->player = player;
-        r->move = move;
-        r->row = row;
-        r->link = NULL;
-        temp->link = r;
+        // define second temporary node as size of list
+        temp2 = (struct node *)malloc(sizeof(struct node));
+        // assign values to temporary node
+        temp2->player = player;
+        temp2->move = move;
+        temp2->row = row;
+        // next node doesn't exist as current node is last in the list so it is NULL
+        temp2->link = NULL;
+        // assign latest node as secondary temporary node
+        temp1->link = temp2;
     }
 }
 
 void saveGame(struct node ** list)
 {
+    // integer variable gameNumber set to 1 in case it's first time saving game
     int gameNumber = 1;
+    // char variable line set to 256 as that is the amount of characters that a typical file will hold per line
     char line[256];
+    // FILE variable file is a pointer to the location of desired file
     FILE *file;
 
+    // open gamelog file for reading purposes
     file = fopen("games/gamelog.txt", "r");
+    // if file exists
     if (file) {
+        // while loop that will run as long as the file has contents
         while (fgets(line, sizeof(line), file)) {
+            // if line contains "GAME" then gameNumber is incremented
             if (strstr(line, "GAME") != NULL) {
                 gameNumber++;
             }
         }
     }
+    // close file as it is read only
+    fclose(file);
 
+    // reopen file but this time to append data to it
     file = fopen("games/gamelog.txt", "a");
+    // create a new node for iterating through the list
     struct node * iterator = *list;
+    // append game number and board size to file
     fprintf(file, "GAME %d %dx%d\n", gameNumber, standardX, standardY);
+    // while list is not null
     while (iterator != NULL) {
+        // append player, move and row to file
         fprintf(file, "Player: %c, Move: %c, Row: %d\n", iterator->player, iterator->move, iterator->row);
+        // go to next node in list
         iterator = iterator->link;
     }
 
+    // append "END" to signal end of game
     fprintf(file, "END\n");
+    // close file
     fclose(file);
 }
 
+// replayDelay function is just 2 for loops that will run to cause a temporary delay
 void replayDelay()
 {
     int i, j;
     for (i = 0; i < 40000; i++) {
-        for (j = 0; j < 80000; j++) {}
+        for (j = 0; j < 60000; j++) {}
     }
 }
