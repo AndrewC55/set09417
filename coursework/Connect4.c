@@ -653,6 +653,7 @@ int defineY() {
 }
 
 void replayGame() {
+    // define variables to be used
     int gameCount = 1, gameSelect = 1, gameNumber, row;
     char line[256], input, player, move;
     char* playerName;
@@ -861,7 +862,6 @@ void saveGame(struct node ** list)
     }
     // close file as it is read only
     fclose(file);
-
     // reopen file but this time to append data to it
     file = fopen("games/gamelog.txt", "a");
     // create a new node for iterating through the list
