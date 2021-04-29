@@ -1,2 +1,2 @@
 # set09417
-C programming solutions for Data Structures and Algorithms
+C programming solutions for Algorithms & Data Structures
