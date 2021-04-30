@@ -620,7 +620,7 @@ int defineX() {
             break;
         } else {
             system("clear");
-            printf("Please select a number between 1 and 9\n");
+            printf("Please select a number between 1 and %d\n", MAX_BOARD_SIZE);
         }
     }
 
@@ -644,7 +644,7 @@ int defineY() {
             break;
         } else {
             system("clear");
-            printf("Please select a number between 1 and 9\n");
+            printf("Please select a number between 1 and %d\n", MAX_BOARD_SIZE);
         }
     }
 
@@ -705,6 +705,8 @@ void replayGame() {
         if (strstr(line, "GAME") != NULL) {
             // if incremented gameSelect is equal to user's input
             if (gameSelect == gameNumber) {
+                standardY = validateInput(line[9], MAX_BOARD_SIZE);
+                standardX = validateInput(line[7], MAX_BOARD_SIZE);
                 // define board size
                 char board[standardY][standardX];
                 // init array by setting all spaces to 'O'
