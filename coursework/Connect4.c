@@ -190,6 +190,8 @@ void createBoard() {
         // if user wants standard sized board the loop is broken
         if (option == 1) {
             system("clear");
+            standardX = 7;
+            standardY = 6;
             break;
             // if user wants custom sized board defineX and defineY are called
         } else if (option == 2) {
